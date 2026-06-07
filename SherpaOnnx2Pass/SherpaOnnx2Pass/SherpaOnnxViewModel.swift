@@ -22,6 +22,7 @@ class SherpaOnnxViewModel: ObservableObject {
 
     var audioEngine: AVAudioEngine? = nil
     var offlineRecognizer: SherpaOnnxOfflineRecognizer? = nil
+    var vad: SherpaOnnxVoiceActivityDetectorWrapper? = nil
 
     var lastSentence: String = ""
     let maxSentence: Int = 10
@@ -54,6 +55,7 @@ class SherpaOnnxViewModel: ObservableObject {
 
     init() {
         initOfflineRecognizer()
+        initVad()
         initRecorder()
     }
 
@@ -76,6 +78,19 @@ class SherpaOnnxViewModel: ObservableObject {
             maxActivePaths: 4
         )
         offlineRecognizer = SherpaOnnxOfflineRecognizer(config: &config)
+    }
+
+    private func initVad() {
+        guard hasSileroVadModel() else {
+            print("VAD is disabled: missing silero_vad.onnx.")
+            return
+        }
+
+        var config = getSileroVadModelConfig()
+        vad = SherpaOnnxVoiceActivityDetectorWrapper(
+            config: &config,
+            buffer_size_in_seconds: 30
+        )
     }
 
     private func initRecorder() {
@@ -150,6 +165,7 @@ class SherpaOnnxViewModel: ObservableObject {
         sentences = []
         audioQueue.sync {
             self.recordedSamples = []
+            self.vad?.reset()
         }
         DispatchQueue.main.async {
             self.subtitles = "Recording..."
@@ -190,10 +206,8 @@ class SherpaOnnxViewModel: ObservableObject {
             return
         }
 
-        let text = offlineRecognizer
-            .decode(samples: samples, sampleRate: sampleRate)
-            .text
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let segmentTexts = decodeSpeechSegments(samples, using: offlineRecognizer)
+        let text = segmentTexts.joined(separator: " | ")
 
         DispatchQueue.main.async {
             self.lastSentence = ""
@@ -203,5 +217,42 @@ class SherpaOnnxViewModel: ObservableObject {
             }
             self.subtitles = self.results
         }
+    }
+
+    private func decodeSpeechSegments(
+        _ samples: [Float],
+        using offlineRecognizer: SherpaOnnxOfflineRecognizer
+    ) -> [String] {
+        guard let vad = vad else {
+            let text = recognize(samples, using: offlineRecognizer)
+            return text.isEmpty ? [] : [text]
+        }
+
+        vad.reset()
+        vad.acceptWaveform(samples: samples)
+        vad.flush()
+
+        var texts: [String] = []
+        while !vad.isEmpty() {
+            let segment = vad.front()
+            let text = recognize(segment.samples, using: offlineRecognizer)
+            if !text.isEmpty {
+                texts.append(text)
+            }
+            vad.pop()
+        }
+        vad.clear()
+
+        return texts
+    }
+
+    private func recognize(
+        _ samples: [Float],
+        using offlineRecognizer: SherpaOnnxOfflineRecognizer
+    ) -> String {
+        offlineRecognizer
+            .decode(samples: samples, sampleRate: sampleRate)
+            .text
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

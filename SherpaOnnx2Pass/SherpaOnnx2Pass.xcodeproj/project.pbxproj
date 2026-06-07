@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		279E59662FD54E7C00B16DF4 /* silero_vad.onnx in Resources */ = {isa = PBXBuildFile; fileRef = 279E59652FD54E7C00B16DF4 /* silero_vad.onnx */; };
 		C9A2587D2AAEFFF100E555CA /* SherpaOnnx2PassApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A2587C2AAEFFF100E555CA /* SherpaOnnx2PassApp.swift */; };
 		C9A2587F2AAEFFF100E555CA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A2587E2AAEFFF100E555CA /* ContentView.swift */; };
 		C9A258812AAEFFF200E555CA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9A258802AAEFFF200E555CA /* Assets.xcassets */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		279E59652FD54E7C00B16DF4 /* silero_vad.onnx */ = {isa = PBXFileReference; lastKnownFileType = file; path = silero_vad.onnx; sourceTree = SOURCE_ROOT; };
 		C981264F2BFEED7C000AD7AA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C9A258792AAEFFF100E555CA /* SherpaOnnx2Pass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SherpaOnnx2Pass.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9A2587C2AAEFFF100E555CA /* SherpaOnnx2PassApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SherpaOnnx2PassApp.swift; sourceTree = "<group>"; };
@@ -54,6 +56,7 @@
 		C9A258702AAEFFF100E555CA = {
 			isa = PBXGroup;
 			children = (
+				279E59652FD54E7C00B16DF4 /* silero_vad.onnx */,
 				C9A2587B2AAEFFF100E555CA /* SherpaOnnx2Pass */,
 				C9A2587A2AAEFFF100E555CA /* Products */,
 				C9A258942AAF05D100E555CA /* Frameworks */,
@@ -163,6 +166,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				279E59662FD54E7C00B16DF4 /* silero_vad.onnx in Resources */,
 				C9A258842AAEFFF200E555CA /* Preview Assets.xcassets in Resources */,
 				C9A258812AAEFFF200E555CA /* Assets.xcassets in Resources */,
 			);

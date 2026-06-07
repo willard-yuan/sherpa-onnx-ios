@@ -19,6 +19,10 @@ enum BundledASRModel {
     "sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17"
 }
 
+enum BundledVADModel {
+  static let silero = "silero_vad"
+}
+
 func hasResource(in directory: String, _ forResource: String, _ ofType: String) -> Bool {
   Bundle.main.path(forResource: forResource, ofType: ofType, inDirectory: directory) != nil
     || hasResource(forResource, ofType)
@@ -197,6 +201,28 @@ func getNonStreamingSenseVoiceFunASRNanoInt820251217(
     tokens: tokens,
     numThreads: 2,
     senseVoice: senseVoice
+  )
+}
+
+func hasSileroVadModel() -> Bool {
+  hasResource(BundledVADModel.silero, "onnx")
+}
+
+func getSileroVadModelConfig() -> SherpaOnnxVadModelConfig {
+  let model = getResource(BundledVADModel.silero, "onnx")
+  let sileroVad = sherpaOnnxSileroVadModelConfig(
+    model: model,
+    threshold: 0.25,
+    minSilenceDuration: 0.5,
+    minSpeechDuration: 0.5,
+    windowSize: 512,
+    maxSpeechDuration: 10.0
+  )
+
+  return sherpaOnnxVadModelConfig(
+    sileroVad: sileroVad,
+    sampleRate: 16000,
+    numThreads: 1
   )
 }
 
