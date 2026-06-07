@@ -21,6 +21,7 @@ enum BundledASRModel {
 
 enum BundledVADModel {
   static let silero = "silero_vad"
+  static let sileroWindowSize = 512
 }
 
 func hasResource(in directory: String, _ forResource: String, _ ofType: String) -> Bool {
@@ -208,20 +209,20 @@ func hasSileroVadModel() -> Bool {
   hasResource(BundledVADModel.silero, "onnx")
 }
 
-func getSileroVadModelConfig() -> SherpaOnnxVadModelConfig {
+func getSileroVadModelConfig(sampleRate: Int = 16000) -> SherpaOnnxVadModelConfig {
   let model = getResource(BundledVADModel.silero, "onnx")
   let sileroVad = sherpaOnnxSileroVadModelConfig(
     model: model,
     threshold: 0.25,
     minSilenceDuration: 0.5,
     minSpeechDuration: 0.5,
-    windowSize: 512,
+    windowSize: BundledVADModel.sileroWindowSize,
     maxSpeechDuration: 10.0
   )
 
   return sherpaOnnxVadModelConfig(
     sileroVad: sileroVad,
-    sampleRate: 16000,
+    sampleRate: Int32(sampleRate),
     numThreads: 1
   )
 }

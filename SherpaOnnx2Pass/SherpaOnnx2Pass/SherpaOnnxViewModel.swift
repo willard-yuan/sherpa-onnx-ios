@@ -21,8 +21,7 @@ class SherpaOnnxViewModel: ObservableObject {
     var recordedSamples: [Float] = []
 
     var audioEngine: AVAudioEngine? = nil
-    var offlineRecognizer: SherpaOnnxOfflineRecognizer? = nil
-    var vad: SherpaOnnxVoiceActivityDetectorWrapper? = nil
+    var speechRecognitionService: SpeechRecognitionService? = nil
 
     var lastSentence: String = ""
     let maxSentence: Int = 10
@@ -54,59 +53,45 @@ class SherpaOnnxViewModel: ObservableObject {
     }
 
     init() {
-        initOfflineRecognizer()
-        initVad()
+        initSpeechRecognitionService()
         initRecorder()
     }
 
-    private func initOfflineRecognizer() {
-        guard hasNonStreamingSenseVoiceFunASRNanoInt820251217() else {
-            print("SenseVoice recognizer is disabled: missing model.int8.onnx or tokens.txt.")
-            return
-        }
-
-        let modelConfig = getNonStreamingSenseVoiceFunASRNanoInt820251217()
-
-        let featConfig = sherpaOnnxFeatureConfig(
-            sampleRate: sampleRate,
-            featureDim: 80)
-
-        var config = sherpaOnnxOfflineRecognizerConfig(
-            featConfig: featConfig,
-            modelConfig: modelConfig,
-            decodingMethod: "greedy_search",
-            maxActivePaths: 4
-        )
-        offlineRecognizer = SherpaOnnxOfflineRecognizer(config: &config)
-    }
-
-    private func initVad() {
-        guard hasSileroVadModel() else {
-            print("VAD is disabled: missing silero_vad.onnx.")
-            return
-        }
-
-        var config = getSileroVadModelConfig()
-        vad = SherpaOnnxVoiceActivityDetectorWrapper(
-            config: &config,
-            buffer_size_in_seconds: 30
-        )
+    private func initSpeechRecognitionService() {
+        speechRecognitionService = SpeechRecognitionService(sampleRate: sampleRate)
     }
 
     private func initRecorder() {
         print("init recorder")
         audioEngine = AVAudioEngine()
-        let inputNode = self.audioEngine?.inputNode
+        guard let inputNode = self.audioEngine?.inputNode else {
+            print("Audio recorder is disabled: missing input node.")
+            return
+        }
+
         let bus = 0
-        let inputFormat = inputNode?.outputFormat(forBus: bus)
-        let outputFormat = AVAudioFormat(
+        let inputFormat = inputNode.outputFormat(forBus: bus)
+        guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
+            print("Audio recorder is disabled: invalid input format \(inputFormat).")
+            return
+        }
+
+        guard let outputFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
-            sampleRate: 16000, channels: 1,
-            interleaved: false)!
+            sampleRate: Double(sampleRate),
+            channels: 1,
+            interleaved: false
+        ) else {
+            print("Audio recorder is disabled: failed to create output format.")
+            return
+        }
 
-        let converter = AVAudioConverter(from: inputFormat!, to: outputFormat)!
+        guard let converter = AVAudioConverter(from: inputFormat, to: outputFormat) else {
+            print("Audio recorder is disabled: failed to create audio converter.")
+            return
+        }
 
-        inputNode!.installTap(
+        inputNode.installTap(
             onBus: bus,
             bufferSize: 1024,
             format: inputFormat
@@ -165,7 +150,7 @@ class SherpaOnnxViewModel: ObservableObject {
         sentences = []
         audioQueue.sync {
             self.recordedSamples = []
-            self.vad?.reset()
+            self.speechRecognitionService?.resetVad()
         }
         DispatchQueue.main.async {
             self.subtitles = "Recording..."
@@ -198,7 +183,8 @@ class SherpaOnnxViewModel: ObservableObject {
             return
         }
 
-        guard let offlineRecognizer = offlineRecognizer else {
+        guard let speechRecognitionService = speechRecognitionService,
+              speechRecognitionService.isRecognizerAvailable else {
             DispatchQueue.main.async {
                 self.lastSentence = "SenseVoice recognizer is not available."
                 self.subtitles = self.results
@@ -206,8 +192,7 @@ class SherpaOnnxViewModel: ObservableObject {
             return
         }
 
-        let segmentTexts = decodeSpeechSegments(samples, using: offlineRecognizer)
-        let text = segmentTexts.joined(separator: " | ")
+        let text = speechRecognitionService.recognize(samples: samples)
 
         DispatchQueue.main.async {
             self.lastSentence = ""
@@ -217,42 +202,5 @@ class SherpaOnnxViewModel: ObservableObject {
             }
             self.subtitles = self.results
         }
-    }
-
-    private func decodeSpeechSegments(
-        _ samples: [Float],
-        using offlineRecognizer: SherpaOnnxOfflineRecognizer
-    ) -> [String] {
-        guard let vad = vad else {
-            let text = recognize(samples, using: offlineRecognizer)
-            return text.isEmpty ? [] : [text]
-        }
-
-        vad.reset()
-        vad.acceptWaveform(samples: samples)
-        vad.flush()
-
-        var texts: [String] = []
-        while !vad.isEmpty() {
-            let segment = vad.front()
-            let text = recognize(segment.samples, using: offlineRecognizer)
-            if !text.isEmpty {
-                texts.append(text)
-            }
-            vad.pop()
-        }
-        vad.clear()
-
-        return texts
-    }
-
-    private func recognize(
-        _ samples: [Float],
-        using offlineRecognizer: SherpaOnnxOfflineRecognizer
-    ) -> String {
-        offlineRecognizer
-            .decode(samples: samples, sampleRate: sampleRate)
-            .text
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

@@ -21,6 +21,20 @@
                ReferencedContainer = "container:SherpaOnnx2Pass.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C9B1000B2FD5600000B16DF4"
+               BuildableName = "SherpaOnnx2PassTests.xctest"
+               BlueprintName = "SherpaOnnx2PassTests"
+               ReferencedContainer = "container:SherpaOnnx2Pass.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -29,6 +43,28 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C9B1000B2FD5600000B16DF4"
+               BuildableName = "SherpaOnnx2PassTests.xctest"
+               BlueprintName = "SherpaOnnx2PassTests"
+               ReferencedContainer = "container:SherpaOnnx2Pass.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "C9A258782AAEFFF100E555CA"
+            BuildableName = "SherpaOnnx2Pass.app"
+            BlueprintName = "SherpaOnnx2Pass"
+            ReferencedContainer = "container:SherpaOnnx2Pass.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Release"
