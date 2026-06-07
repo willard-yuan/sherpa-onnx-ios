@@ -34,13 +34,29 @@ final class SpeechRecognitionService {
         }
 
         let speechSegments = splitSpeechSegments(samples)
-        return speechSegments.compactMap { segment in
+        let texts = decodeSegments(speechSegments, using: offlineRecognizer)
+        if !texts.isEmpty {
+            return texts
+        }
+
+        guard let fallbackSegment = energyTrimmedSegment(samples) else {
+            return []
+        }
+
+        return decodeSegments([fallbackSegment], using: offlineRecognizer)
+    }
+
+    private func decodeSegments(
+        _ segments: [[Float]],
+        using offlineRecognizer: SherpaOnnxOfflineRecognizer
+    ) -> [String] {
+        segments.compactMap { segment in
             let text = offlineRecognizer
                 .decode(samples: segment, sampleRate: sampleRate)
                 .text
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let normalizedText = normalizeRecognitionText(text)
 
-            return text.isEmpty ? nil : text
+            return normalizedText.isEmpty ? nil : normalizedText
         }
     }
 
@@ -94,19 +110,90 @@ final class SpeechRecognitionService {
 
         vad.flush()
 
-        var segments: [[Float]] = []
+        var ranges: [(start: Int, end: Int)] = []
         while !vad.isEmpty() {
             let segment = vad.front()
             if segment.n > 0 {
-                let padding = sampleRate
-                let start = max(segment.start - padding, 0)
-                let end = min(segment.start + segment.n + padding, samples.count)
-                segments.append(Array(samples[start..<end]))
+                ranges.append((segment.start, segment.start + segment.n))
             }
             vad.pop()
         }
         vad.clear()
 
-        return segments.isEmpty ? [samples] : segments
+        let padding = sampleRate
+        let mergedRanges = mergeSpeechRanges(ranges, maxGap: sampleRate)
+        return mergedRanges.compactMap { range in
+            let start = max(range.start - padding, 0)
+            let end = min(range.end + padding, samples.count)
+            return end > start ? Array(samples[start..<end]) : nil
+        }
+    }
+
+    private func mergeSpeechRanges(
+        _ ranges: [(start: Int, end: Int)],
+        maxGap: Int
+    ) -> [(start: Int, end: Int)] {
+        guard var current = ranges.first else {
+            return []
+        }
+
+        var merged: [(start: Int, end: Int)] = []
+        for range in ranges.dropFirst() {
+            if range.start - current.end <= maxGap {
+                current.end = max(current.end, range.end)
+            } else {
+                merged.append(current)
+                current = range
+            }
+        }
+        merged.append(current)
+
+        return merged
+    }
+
+    private func energyTrimmedSegment(_ samples: [Float]) -> [Float]? {
+        let frameSize = BundledVADModel.sileroWindowSize
+        var frameEnergies: [(offset: Int, energy: Float)] = []
+        frameEnergies.reserveCapacity(samples.count / frameSize + 1)
+
+        for offset in stride(from: 0, to: samples.count, by: frameSize) {
+            let end = min(offset + frameSize, samples.count)
+            var sum: Float = 0
+            for sample in samples[offset..<end] {
+                sum += sample * sample
+            }
+            let energy = sqrt(sum / Float(max(end - offset, 1)))
+            frameEnergies.append((offset, energy))
+        }
+
+        guard let peakEnergy = frameEnergies.map(\.energy).max(), peakEnergy >= 0.003 else {
+            return nil
+        }
+
+        let threshold = max(peakEnergy * 0.08, 0.002)
+        guard let first = frameEnergies.first(where: { $0.energy >= threshold }),
+              let last = frameEnergies.last(where: { $0.energy >= threshold }) else {
+            return nil
+        }
+
+        let padding = sampleRate
+        let start = max(first.offset - padding, 0)
+        let end = min(last.offset + frameSize + padding, samples.count)
+
+        guard end > start else {
+            return nil
+        }
+
+        return Array(samples[start..<end])
+    }
+
+    private func normalizeRecognitionText(_ text: String) -> String {
+        text
+            .replacingOccurrences(
+                of: #"<\|[^>]+\|>"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

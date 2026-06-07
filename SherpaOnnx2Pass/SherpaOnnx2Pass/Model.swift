@@ -213,9 +213,9 @@ func getSileroVadModelConfig(sampleRate: Int = 16000) -> SherpaOnnxVadModelConfi
   let model = getResource(BundledVADModel.silero, "onnx")
   let sileroVad = sherpaOnnxSileroVadModelConfig(
     model: model,
-    threshold: 0.25,
-    minSilenceDuration: 0.5,
-    minSpeechDuration: 0.5,
+    threshold: 0.15,
+    minSilenceDuration: 0.35,
+    minSpeechDuration: 0.1,
     windowSize: BundledVADModel.sileroWindowSize,
     maxSpeechDuration: 10.0
   )
