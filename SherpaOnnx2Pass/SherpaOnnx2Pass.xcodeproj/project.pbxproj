@@ -20,6 +20,8 @@
 		C9A258982AAF05E400E555CA /* onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A258972AAF05E400E555CA /* onnxruntime.xcframework */; };
 		C9B100002FD5600000B16DF4 /* SpeechRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B100012FD5600000B16DF4 /* SpeechRecognitionService.swift */; };
 		C9B100042FD5600000B16DF4 /* SherpaOnnx2PassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B100032FD5600000B16DF4 /* SherpaOnnx2PassTests.swift */; };
+		C9B200002FD5700000B16DF4 /* SileroVADGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B200022FD5700000B16DF4 /* SileroVADGate.swift */; };
+		C9B200012FD5700000B16DF4 /* StreamingRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B200032FD5700000B16DF4 /* StreamingRecognitionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,10 +51,45 @@
 		C9B100012FD5600000B16DF4 /* SpeechRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionService.swift; sourceTree = "<group>"; };
 		C9B100022FD5600000B16DF4 /* SherpaOnnx2PassTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SherpaOnnx2PassTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9B100032FD5600000B16DF4 /* SherpaOnnx2PassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SherpaOnnx2PassTests.swift; sourceTree = "<group>"; };
+		C9B200022FD5700000B16DF4 /* SileroVADGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SileroVADGate.swift; sourceTree = "<group>"; };
+		C9B200032FD5700000B16DF4 /* StreamingRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingRecognitionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		279E59CA2FD55DA000B16DF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				bpe.model,
+				decoder.onnx,
+				encoder.int8.onnx,
+				joiner.int8.onnx,
+				README.md,
+				test_onnx.py,
+				test_wavs/0.wav,
+				test_wavs/1.wav,
+				test_wavs/2.wav,
+				test_wavs/3.wav,
+				tokens.txt,
+			);
+			target = C9B1000B2FD5600000B16DF4 /* SherpaOnnx2PassTests */;
+		};
+		279E59CB2FD55DA000B16DF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				README.md,
+				test_onnx.py,
+				test_wavs/0.wav,
+				test_wavs/1.wav,
+				test_wavs/2.wav,
+				test_wavs/3.wav,
+			);
+			target = C9A258782AAEFFF100E555CA /* SherpaOnnx2Pass */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		279E59252FD53F3B00B16DF4 /* sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17"; sourceTree = "<group>"; };
+		279E59B32FD55DA000B16DF4 /* sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05 */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (279E59CB2FD55DA000B16DF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 279E59CA2FD55DA000B16DF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +120,7 @@
 				C9B1000A2FD5600000B16DF4 /* SherpaOnnx2PassTests */,
 				C9A2587A2AAEFFF100E555CA /* Products */,
 				C9A258942AAF05D100E555CA /* Frameworks */,
+				279E59B32FD55DA000B16DF4 /* sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05 */,
 				279E59252FD53F3B00B16DF4 /* sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17 */,
 			);
 			sourceTree = "<group>";
@@ -104,6 +142,8 @@
 				C9A2588D2AAF039D00E555CA /* Extension.swift */,
 				C9A2588A2AAF039D00E555CA /* Model.swift */,
 				C9B100012FD5600000B16DF4 /* SpeechRecognitionService.swift */,
+				C9B200022FD5700000B16DF4 /* SileroVADGate.swift */,
+				C9B200032FD5700000B16DF4 /* StreamingRecognitionService.swift */,
 				C9A2588C2AAF039D00E555CA /* SherpaOnnxViewModel.swift */,
 				C9A2587C2AAEFFF100E555CA /* SherpaOnnx2PassApp.swift */,
 				C9A2587E2AAEFFF100E555CA /* ContentView.swift */,
@@ -154,7 +194,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				279E59252FD53F3B00B16DF4 /* sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17 */,
+				279E59B32FD55DA000B16DF4 /* sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05 */,
 			);
 			name = SherpaOnnx2Pass;
 			productName = SherpaOnnx2Pass;
@@ -243,6 +283,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9A2588E2AAF039D00E555CA /* Model.swift in Sources */,
+				C9B200002FD5700000B16DF4 /* SileroVADGate.swift in Sources */,
+				C9B200012FD5700000B16DF4 /* StreamingRecognitionService.swift in Sources */,
 				C9A258902AAF039D00E555CA /* SherpaOnnxViewModel.swift in Sources */,
 				C9A258912AAF039D00E555CA /* Extension.swift in Sources */,
 				C9A2587F2AAEFFF100E555CA /* ContentView.swift in Sources */,

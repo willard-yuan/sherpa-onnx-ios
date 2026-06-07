@@ -1,4 +1,7 @@
 .DS_Store
+.build/
 xcuserdata/
 *.xcuserstate
 sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17/model.int8.onnx
+sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05/
+

@@ -19,6 +19,11 @@ enum BundledASRModel {
     "sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17"
 }
 
+enum BundledStreamingASRModel {
+  static let xASR480msZhEnPunctInt820260605 =
+    "sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05"
+}
+
 enum BundledVADModel {
   static let silero = "silero_vad"
   static let sileroWindowSize = 512
@@ -116,6 +121,39 @@ func getStreamingZhInt8Zipformer20250630() -> SherpaOnnxOnlineModelConfig {
       joiner: joiner),
     numThreads: 1,
     modelType: "zipformer2"
+  )
+}
+
+/// sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05
+/// Streaming Zipformer transducer model with punctuation for Chinese/English.
+func hasStreamingXASR480msZhEnPunctInt820260605() -> Bool {
+  let directory = BundledStreamingASRModel.xASR480msZhEnPunctInt820260605
+
+  return hasResource(in: directory, "encoder.int8", "onnx")
+    && hasResource(in: directory, "decoder", "onnx")
+    && hasResource(in: directory, "joiner.int8", "onnx")
+    && hasResource(in: directory, "tokens", "txt")
+    && hasResource(in: directory, "bpe", "model")
+}
+
+func getStreamingXASR480msZhEnPunctInt820260605() -> SherpaOnnxOnlineModelConfig {
+  let directory = BundledStreamingASRModel.xASR480msZhEnPunctInt820260605
+  let encoder = getResource(in: directory, "encoder.int8", "onnx")
+  let decoder = getResource(in: directory, "decoder", "onnx")
+  let joiner = getResource(in: directory, "joiner.int8", "onnx")
+  let tokens = getResource(in: directory, "tokens", "txt")
+  let bpe = getResource(in: directory, "bpe", "model")
+
+  return sherpaOnnxOnlineModelConfig(
+    tokens: tokens,
+    transducer: sherpaOnnxOnlineTransducerModelConfig(
+      encoder: encoder,
+      decoder: decoder,
+      joiner: joiner),
+    numThreads: 2,
+    modelType: "zipformer2",
+    modelingUnit: "bpe",
+    bpeVocab: bpe
   )
 }
 
