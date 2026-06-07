@@ -18,14 +18,15 @@ class SherpaOnnxViewModel: ObservableObject {
     @Published var subtitles: String = ""
 
     var sentences: [String] = []
-    var samplesBuffer = [[Float]] ()
+    var recordedSamples: [Float] = []
 
     var audioEngine: AVAudioEngine? = nil
-    var recognizer: SherpaOnnxRecognizer! = nil
     var offlineRecognizer: SherpaOnnxOfflineRecognizer? = nil
 
     var lastSentence: String = ""
     let maxSentence: Int = 10
+    private let sampleRate = 16000
+    private let audioQueue = DispatchQueue(label: "SherpaOnnx2Pass.audio")
 
     var results: String {
         if sentences.isEmpty && lastSentence.isEmpty {
@@ -52,57 +53,20 @@ class SherpaOnnxViewModel: ObservableObject {
     }
 
     init() {
-        initRecognizer()
         initOfflineRecognizer()
         initRecorder()
     }
 
-    private func initRecognizer() {
-        // Please select one model that is best suitable for you.
-        //
-        // You can also modify Model.swift to add new pre-trained models from
-        // https://k2-fsa.github.io/sherpa/onnx/pretrained_models/index.html
-        // let modelConfig = getBilingualStreamingZhEnZipformer20230220()
-        /* let modelConfig = getStreamingZh14MZipformer20230223() */
-
-        let modelConfig = getStreamingZhInt8Zipformer20250630()
-
-        let featConfig = sherpaOnnxFeatureConfig(
-            sampleRate: 16000,
-            featureDim: 80)
-
-        var config = sherpaOnnxOnlineRecognizerConfig(
-            featConfig: featConfig,
-            modelConfig: modelConfig,
-            enableEndpoint: true,
-            rule1MinTrailingSilence: 2.4,
-
-            rule2MinTrailingSilence: 1.2,
-
-            rule3MinUtteranceLength: 30,
-            decodingMethod: "greedy_search",
-            maxActivePaths: 4
-        )
-        recognizer = SherpaOnnxRecognizer(config: &config)
-    }
-
     private func initOfflineRecognizer() {
-        guard
-            hasResource("tiny.en-encoder.int8", "onnx"),
-            hasResource("tiny.en-decoder.int8", "onnx"),
-            hasResource("tiny.en-tokens", "txt")
-        else {
-            print("Offline recognizer is disabled: missing offline model files.")
+        guard hasNonStreamingSenseVoiceFunASRNanoInt820251217() else {
+            print("SenseVoice recognizer is disabled: missing model.int8.onnx or tokens.txt.")
             return
         }
 
-        // let modelConfig = getNonStreamingZhParaformer20230914()
-        let modelConfig = getNonStreamingWhisperTinyEn()
-
-        // let modelConfig = getNonStreamingEnZipformer20230504()
+        let modelConfig = getNonStreamingSenseVoiceFunASRNanoInt820251217()
 
         let featConfig = sherpaOnnxFeatureConfig(
-            sampleRate: 16000,
+            sampleRate: sampleRate,
             featureDim: 80)
 
         var config = sherpaOnnxOfflineRecognizerConfig(
@@ -164,66 +128,8 @@ class SherpaOnnxViewModel: ObservableObject {
 
             let array = convertedBuffer.array()
             if !array.isEmpty {
-                self.samplesBuffer.append(array)
-
-                self.recognizer.acceptWaveform(samples: array)
-                while (self.recognizer.isReady()){
-                    self.recognizer.decode()
-                }
-                let isEndpoint = self.recognizer.isEndpoint()
-                let text = self.recognizer.getResult().text
-
-                if !text.isEmpty && self.lastSentence != text {
-                    self.lastSentence = text
-                    self.updateLabel()
-                    print(text)
-                }
-
-                if isEndpoint{
-                    if !text.isEmpty {
-                        // Invoke offline recognizer
-                        var numSamples: Int = 0
-                        for a in self.samplesBuffer {
-                          numSamples += a.count
-                        }
-
-                        var samples: [Float] = Array(repeating: 0, count: numSamples)
-                        var i = 0
-                        for a in self.samplesBuffer {
-                            for s in a {
-                                samples[i] = s
-                                i += 1
-                            }
-                        }
-
-                        let num = 12000
-                        if let offlineRecognizer = self.offlineRecognizer {
-                            let end = max(samples.count - num, 0)
-                            self.lastSentence = offlineRecognizer.decode(samples: Array(samples[0..<end])).text
-                        }
-
-                        let tmp = self.lastSentence.isEmpty ? text : self.lastSentence
-                        self.lastSentence = ""
-                        self.sentences.append(tmp)
-
-                        self.updateLabel()
-
-                        i = 0
-                        if samples.count > num {
-                            i = samples.count - num
-                        }
-                        var tail: [Float] = Array(repeating: 0, count: samples.count - i)
-
-                        for k in 0  ... samples.count - i - 1 {
-                            tail[k] = samples[i+k];
-                        }
-
-                        self.samplesBuffer = [[Float]]()
-                        self.samplesBuffer.append(tail)
-                    } else {
-                        self.samplesBuffer = [[Float]]()
-                    }
-                    self.recognizer.reset()
+                self.audioQueue.async {
+                    self.recordedSamples.append(contentsOf: array)
                 }
             }
         }
@@ -242,8 +148,12 @@ class SherpaOnnxViewModel: ObservableObject {
     private func startRecorder() {
         lastSentence = ""
         sentences = []
-        samplesBuffer = [[Float]] ()
-        updateLabel()
+        audioQueue.sync {
+            self.recordedSamples = []
+        }
+        DispatchQueue.main.async {
+            self.subtitles = "Recording..."
+        }
 
         do {
             try self.audioEngine?.start()
@@ -255,6 +165,43 @@ class SherpaOnnxViewModel: ObservableObject {
 
     private func stopRecorder() {
         audioEngine?.stop()
+        audioQueue.async {
+            let samples = self.recordedSamples
+            self.recordedSamples = []
+            self.decodeRecordedAudio(samples)
+        }
         print("stopped")
+    }
+
+    private func decodeRecordedAudio(_ samples: [Float]) {
+        guard !samples.isEmpty else {
+            DispatchQueue.main.async {
+                self.lastSentence = ""
+                self.subtitles = self.results
+            }
+            return
+        }
+
+        guard let offlineRecognizer = offlineRecognizer else {
+            DispatchQueue.main.async {
+                self.lastSentence = "SenseVoice recognizer is not available."
+                self.subtitles = self.results
+            }
+            return
+        }
+
+        let text = offlineRecognizer
+            .decode(samples: samples, sampleRate: sampleRate)
+            .text
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        DispatchQueue.main.async {
+            self.lastSentence = ""
+            if !text.isEmpty {
+                self.sentences.append(text)
+                print(text)
+            }
+            self.subtitles = self.results
+        }
     }
 }

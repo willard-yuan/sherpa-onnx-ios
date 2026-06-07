@@ -29,13 +29,13 @@
 		C9A2588A2AAF039D00E555CA /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		C9A2588C2AAF039D00E555CA /* SherpaOnnxViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SherpaOnnxViewModel.swift; sourceTree = "<group>"; };
 		C9A2588D2AAF039D00E555CA /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
-		C9A258922AAF057E00E555CA /* SherpaOnnx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SherpaOnnx.swift; path = "../../../swift-api-examples/SherpaOnnx.swift"; sourceTree = "<group>"; };
-		C9A258952AAF05D100E555CA /* sherpa-onnx.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sherpa-onnx.xcframework"; path = "../../build-ios/sherpa-onnx.xcframework"; sourceTree = "<group>"; };
-		C9A258972AAF05E400E555CA /* onnxruntime.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = onnxruntime.xcframework; path = "../../build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework"; sourceTree = "<group>"; };
+		C9A258922AAF057E00E555CA /* SherpaOnnx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SherpaOnnx.swift; path = "../../../sherpa-onnx/swift-api-examples/SherpaOnnx.swift"; sourceTree = "<group>"; };
+		C9A258952AAF05D100E555CA /* sherpa-onnx.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sherpa-onnx.xcframework"; path = "../../sherpa-onnx/build-ios/sherpa-onnx.xcframework"; sourceTree = "<group>"; };
+		C9A258972AAF05E400E555CA /* onnxruntime.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = onnxruntime.xcframework; path = "../../sherpa-onnx/build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5CBE6C032FD312500032B328 /* sherpa-onnx-streaming-zipformer-zh-int8-2025-06-30 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "sherpa-onnx-streaming-zipformer-zh-int8-2025-06-30"; sourceTree = "<group>"; };
+		279E59252FD53F3B00B16DF4 /* sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +57,7 @@
 				C9A2587B2AAEFFF100E555CA /* SherpaOnnx2Pass */,
 				C9A2587A2AAEFFF100E555CA /* Products */,
 				C9A258942AAF05D100E555CA /* Frameworks */,
-				5CBE6C032FD312500032B328 /* sherpa-onnx-streaming-zipformer-zh-int8-2025-06-30 */,
+				279E59252FD53F3B00B16DF4 /* sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17 */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,7 +118,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5CBE6C032FD312500032B328 /* sherpa-onnx-streaming-zipformer-zh-int8-2025-06-30 */,
+				279E59252FD53F3B00B16DF4 /* sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17 */,
 			);
 			name = SherpaOnnx2Pass;
 			productName = SherpaOnnx2Pass;
@@ -309,7 +309,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SherpaOnnx2Pass/Preview Content\"";
-				DEVELOPMENT_TEAM = RA964L95YN;
+				DEVELOPMENT_TEAM = 93AKAR6RQM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Need microphone access for Next-gen Kaldi to work";
@@ -328,7 +328,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.manifoldtech.SherpaOnnx2Pass;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "${PROJECT_DIR}/../../swift-api-examples/SherpaOnnx-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "${PROJECT_DIR}/../../sherpa-onnx/swift-api-examples/SherpaOnnx-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -342,7 +342,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SherpaOnnx2Pass/Preview Content\"";
-				DEVELOPMENT_TEAM = RA964L95YN;
+				DEVELOPMENT_TEAM = 93AKAR6RQM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Need microphone access for Next-gen Kaldi to work";
@@ -361,7 +361,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.manifoldtech.SherpaOnnx2Pass;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "${PROJECT_DIR}/../../swift-api-examples/SherpaOnnx-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "${PROJECT_DIR}/../../sherpa-onnx/swift-api-examples/SherpaOnnx-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

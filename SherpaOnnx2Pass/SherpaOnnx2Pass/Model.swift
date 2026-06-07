@@ -13,6 +13,25 @@ func getResource(_ forResource: String, _ ofType: String) -> String {
   )
   return path!
 }
+
+enum BundledASRModel {
+  static let senseVoiceFunASRNanoInt820251217 =
+    "sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17"
+}
+
+func hasResource(in directory: String, _ forResource: String, _ ofType: String) -> Bool {
+  Bundle.main.path(forResource: forResource, ofType: ofType, inDirectory: directory) != nil
+    || hasResource(forResource, ofType)
+}
+
+func getResource(in directory: String, _ forResource: String, _ ofType: String) -> String {
+  if let path = Bundle.main.path(forResource: forResource, ofType: ofType, inDirectory: directory) {
+    return path
+  }
+
+  return getResource(forResource, ofType)
+}
+
 /// Please refer to
 /// https://k2-fsa.github.io/sherpa/onnx/pretrained_models/index.html
 /// to download pre-trained models
@@ -149,6 +168,35 @@ func getNonStreamingEnZipformer20230504() -> SherpaOnnxOfflineModelConfig {
       joiner: joiner),
     numThreads: 1,
     modelType: "zipformer"
+  )
+}
+
+/// sherpa-onnx-sense-voice-funasr-nano-int8-2025-12-17
+/// Non-streaming SenseVoice CTC model converted from Fun-ASR-Nano.
+func hasNonStreamingSenseVoiceFunASRNanoInt820251217() -> Bool {
+  let directory = BundledASRModel.senseVoiceFunASRNanoInt820251217
+
+  return hasResource(in: directory, "model.int8", "onnx")
+    && hasResource(in: directory, "tokens", "txt")
+}
+
+func getNonStreamingSenseVoiceFunASRNanoInt820251217(
+  language: String = "",
+  useInverseTextNormalization: Bool = true
+) -> SherpaOnnxOfflineModelConfig {
+  let directory = BundledASRModel.senseVoiceFunASRNanoInt820251217
+  let model = getResource(in: directory, "model.int8", "onnx")
+  let tokens = getResource(in: directory, "tokens", "txt")
+  let senseVoice = sherpaOnnxOfflineSenseVoiceModelConfig(
+    model: model,
+    language: language,
+    useInverseTextNormalization: useInverseTextNormalization
+  )
+
+  return sherpaOnnxOfflineModelConfig(
+    tokens: tokens,
+    numThreads: 2,
+    senseVoice: senseVoice
   )
 }
 
