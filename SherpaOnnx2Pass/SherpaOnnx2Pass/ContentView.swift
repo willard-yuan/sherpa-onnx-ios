@@ -11,37 +11,14 @@ struct ContentView: View {
     @StateObject var sherpaOnnxVM = SherpaOnnxViewModel()
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 22) {
             header
 
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(alignment: .leading, spacing: 12) {
-                    if sherpaOnnxVM.subtitles.isEmpty {
-                        Text("Ready")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text(sherpaOnnxVM.subtitles)
-                            .font(.system(.body, design: .rounded))
-                            .lineSpacing(8)
-                            .textSelection(.enabled)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            transcriptView
 
             Spacer()
 
-            Button {
-                toggleRecorder()
-            } label: {
-                Label(
-                    sherpaOnnxVM.status == .stop ? "Start" : "Stop",
-                    systemImage: sherpaOnnxVM.status == .stop ? "mic.fill" : "stop.fill"
-                )
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            bottomControls
         }
         .padding()
     }
@@ -51,17 +28,167 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Streaming ASR")
                     .font(.largeTitle.weight(.semibold))
-                Text(sherpaOnnxVM.status == .recording ? "Zipformer 480ms" : "Idle")
+                Text(headerSubtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Circle()
-                .fill(sherpaOnnxVM.isSpeaking ? Color.green : Color.gray.opacity(0.45))
-                .frame(width: 14, height: 14)
-                .accessibilityLabel(sherpaOnnxVM.isSpeaking ? "Speaking" : "Silent")
+            HStack(spacing: 7) {
+                Image(systemName: sherpaOnnxVM.uiState.systemImage)
+                    .font(.system(size: 13, weight: .semibold))
+                Text(sherpaOnnxVM.uiState.title)
+                    .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(stateColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(stateColor.opacity(0.12))
+            .clipShape(Capsule())
+        }
+    }
+
+    private var transcriptView: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(alignment: .leading, spacing: 26) {
+                finalTranscriptSection
+                livePartialSection
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var finalTranscriptSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Final transcript")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+
+            if sherpaOnnxVM.visibleFinalTranscript.isEmpty {
+                Text(emptyFinalText)
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(sherpaOnnxVM.visibleFinalTranscript) { segment in
+                        Text(segment.text)
+                            .font(.title3)
+                            .lineSpacing(5)
+                            .foregroundStyle(Color.primary)
+                            .textSelection(.enabled)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(
+                                        sherpaOnnxVM.highlightedSegmentID == segment.id
+                                        ? stateColor.opacity(0.16)
+                                        : Color.clear
+                                    )
+                            )
+                            .animation(.easeOut(duration: 0.25), value: sherpaOnnxVM.highlightedSegmentID)
+                    }
+                }
+            }
+        }
+    }
+
+    private var livePartialSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Live partial")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+
+            Text(livePartialText)
+                .font(.title3)
+                .lineSpacing(5)
+                .foregroundStyle(sherpaOnnxVM.livePartial.isEmpty ? Color.secondary.opacity(0.7) : Color.secondary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+        }
+    }
+
+    private var bottomControls: some View {
+        VStack(spacing: 14) {
+            WaveformView(state: sherpaOnnxVM.uiState)
+
+            Button {
+                toggleRecorder()
+            } label: {
+                Label(buttonTitle, systemImage: buttonSystemImage)
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(buttonTint)
+        }
+    }
+
+    private var headerSubtitle: String {
+        switch sherpaOnnxVM.uiState {
+        case .idle:
+            return "点击开始"
+        case .listening:
+            return "Zipformer 480ms"
+        case .speaking:
+            return "实时识别中"
+        case .finalized:
+            return "一句话已定稿"
+        }
+    }
+
+    private var emptyFinalText: String {
+        sherpaOnnxVM.uiState == .idle ? "点击开始" : "等待第一句话定稿"
+    }
+
+    private var livePartialText: String {
+        if !sherpaOnnxVM.livePartial.isEmpty {
+            return sherpaOnnxVM.livePartial
+        }
+
+        switch sherpaOnnxVM.uiState {
+        case .idle:
+            return " "
+        case .listening:
+            return "正在听..."
+        case .speaking:
+            return " "
+        case .finalized:
+            return " "
+        }
+    }
+
+    private var buttonTitle: String {
+        sherpaOnnxVM.uiState == .idle ? "Start" : "Stop"
+    }
+
+    private var buttonSystemImage: String {
+        sherpaOnnxVM.uiState == .idle ? "mic.fill" : "stop.fill"
+    }
+
+    private var buttonTint: Color {
+        sherpaOnnxVM.uiState == .idle ? .blue : .red
+    }
+
+    private var stateColor: Color {
+        switch sherpaOnnxVM.uiState {
+        case .idle:
+            return .gray
+        case .listening:
+            return .blue
+        case .speaking:
+            return .green
+        case .finalized:
+            return .orange
         }
     }
 

@@ -22,6 +22,9 @@
 		C9B100042FD5600000B16DF4 /* SherpaOnnx2PassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B100032FD5600000B16DF4 /* SherpaOnnx2PassTests.swift */; };
 		C9B200002FD5700000B16DF4 /* SileroVADGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B200022FD5700000B16DF4 /* SileroVADGate.swift */; };
 		C9B200012FD5700000B16DF4 /* StreamingRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B200032FD5700000B16DF4 /* StreamingRecognitionService.swift */; };
+		C9B300002FD5800000B16DF4 /* RecognitionPresentationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B300032FD5800000B16DF4 /* RecognitionPresentationState.swift */; };
+		C9B300012FD5800000B16DF4 /* TranscriptTextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B300042FD5800000B16DF4 /* TranscriptTextNormalizer.swift */; };
+		C9B300022FD5800000B16DF4 /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B300052FD5800000B16DF4 /* WaveformView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +56,9 @@
 		C9B100032FD5600000B16DF4 /* SherpaOnnx2PassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SherpaOnnx2PassTests.swift; sourceTree = "<group>"; };
 		C9B200022FD5700000B16DF4 /* SileroVADGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SileroVADGate.swift; sourceTree = "<group>"; };
 		C9B200032FD5700000B16DF4 /* StreamingRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingRecognitionService.swift; sourceTree = "<group>"; };
+		C9B300032FD5800000B16DF4 /* RecognitionPresentationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionPresentationState.swift; sourceTree = "<group>"; };
+		C9B300042FD5800000B16DF4 /* TranscriptTextNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptTextNormalizer.swift; sourceTree = "<group>"; };
+		C9B300052FD5800000B16DF4 /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -144,6 +150,9 @@
 				C9B100012FD5600000B16DF4 /* SpeechRecognitionService.swift */,
 				C9B200022FD5700000B16DF4 /* SileroVADGate.swift */,
 				C9B200032FD5700000B16DF4 /* StreamingRecognitionService.swift */,
+				C9B300032FD5800000B16DF4 /* RecognitionPresentationState.swift */,
+				C9B300042FD5800000B16DF4 /* TranscriptTextNormalizer.swift */,
+				C9B300052FD5800000B16DF4 /* WaveformView.swift */,
 				C9A2588C2AAF039D00E555CA /* SherpaOnnxViewModel.swift */,
 				C9A2587C2AAEFFF100E555CA /* SherpaOnnx2PassApp.swift */,
 				C9A2587E2AAEFFF100E555CA /* ContentView.swift */,
@@ -285,11 +294,14 @@
 				C9A2588E2AAF039D00E555CA /* Model.swift in Sources */,
 				C9B200002FD5700000B16DF4 /* SileroVADGate.swift in Sources */,
 				C9B200012FD5700000B16DF4 /* StreamingRecognitionService.swift in Sources */,
+				C9B300002FD5800000B16DF4 /* RecognitionPresentationState.swift in Sources */,
+				C9B300012FD5800000B16DF4 /* TranscriptTextNormalizer.swift in Sources */,
 				C9A258902AAF039D00E555CA /* SherpaOnnxViewModel.swift in Sources */,
 				C9A258912AAF039D00E555CA /* Extension.swift in Sources */,
 				C9A2587F2AAEFFF100E555CA /* ContentView.swift in Sources */,
 				C9A258932AAF057E00E555CA /* SherpaOnnx.swift in Sources */,
 				C9B100002FD5600000B16DF4 /* SpeechRecognitionService.swift in Sources */,
+				C9B300022FD5800000B16DF4 /* WaveformView.swift in Sources */,
 				C9A2587D2AAEFFF100E555CA /* SherpaOnnx2PassApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

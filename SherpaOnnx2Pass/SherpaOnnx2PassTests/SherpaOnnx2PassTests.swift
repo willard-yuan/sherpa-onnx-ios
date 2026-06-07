@@ -2,6 +2,17 @@ import XCTest
 @testable import SherpaOnnx2Pass
 
 final class SherpaOnnx2PassTests: XCTestCase {
+    func testTranscriptTextNormalizerKeepsCaseAndCleansSpacing() {
+        XCTAssertEqual(
+            TranscriptTextNormalizer.normalize("昨 天 是 Monday ， today is 礼 拜 二"),
+            "昨天是 Monday， today is 礼拜二"
+        )
+        XCTAssertEqual(
+            TranscriptTextNormalizer.normalize("。 这 是 第 一 种 ， What's your name ?"),
+            "这是第一种， What's your name?"
+        )
+    }
+
     func testStreamingModelResourcesAreBundled() {
         XCTAssertTrue(hasStreamingXASR480msZhEnPunctInt820260605())
         XCTAssertTrue(hasSileroVadModel())
@@ -44,6 +55,7 @@ final class SherpaOnnx2PassTests: XCTestCase {
         print("combined text => \(text)")
 
         XCTAssertGreaterThanOrEqual(finalized.count, 2)
+        XCTAssertFalse(text.contains(" | "))
         finalized.forEach { XCTAssertContainsRecognitionCharacters($0) }
     }
 

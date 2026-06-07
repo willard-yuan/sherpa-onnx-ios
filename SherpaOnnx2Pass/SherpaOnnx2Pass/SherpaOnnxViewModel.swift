@@ -8,18 +8,11 @@
 import Foundation
 import AVFoundation
 
-enum Status {
-    case stop
-    case recording
-}
-
 class SherpaOnnxViewModel: ObservableObject {
-    @Published var status: Status = .stop
-    @Published var subtitles: String = ""
+    @Published var uiState: RecognitionUIState = .idle
+    @Published var finalTranscript: [TranscriptSegment] = []
     @Published var livePartial: String = ""
-    @Published var isSpeaking: Bool = false
-
-    var sentences: [String] = []
+    @Published var highlightedSegmentID: UUID?
 
     var audioEngine: AVAudioEngine? = nil
     var streamingRecognitionService: StreamingRecognitionService? = nil
@@ -27,29 +20,15 @@ class SherpaOnnxViewModel: ObservableObject {
     let maxSentence: Int = 10
     private let sampleRate = 16000
     private let audioQueue = DispatchQueue(label: "SherpaOnnx2Pass.audio")
+    private let finalizedHighlightDuration: TimeInterval = 0.6
+    private var isRecording = false
 
-    var results: String {
-        if sentences.isEmpty && livePartial.isEmpty {
-            return ""
-        }
-
-        let start = max(sentences.count - maxSentence, 0)
-        let finalized = sentences.enumerated()
-            .map { (index, s) in "\(index): \(s)" }[start...]
-            .joined(separator: "\n")
-
-        guard !livePartial.isEmpty else {
-            return finalized
-        }
-
-        let partial = "\(sentences.count): \(livePartial)"
-        return finalized.isEmpty ? partial : finalized + "\n" + partial
+    var visibleFinalTranscript: [TranscriptSegment] {
+        Array(finalTranscript.suffix(maxSentence))
     }
 
-    func updateLabel() {
-        DispatchQueue.main.async {
-            self.subtitles = self.results
-        }
+    var isActive: Bool {
+        uiState != .idle
     }
 
     init() {
@@ -136,7 +115,7 @@ class SherpaOnnxViewModel: ObservableObject {
     }
 
     public func toggleRecorder() {
-        if status == .stop {
+        if uiState == .idle {
             startRecorder()
         } else {
             stopRecorder()
@@ -144,35 +123,43 @@ class SherpaOnnxViewModel: ObservableObject {
     }
 
     private func startRecorder() {
-        sentences = []
+        guard streamingRecognitionService?.isRecognizerAvailable == true else {
+            finalTranscript = []
+            livePartial = "Streaming Zipformer recognizer is not available."
+            highlightedSegmentID = nil
+            uiState = .idle
+            return
+        }
+
+        finalTranscript = []
         livePartial = ""
-        isSpeaking = false
+        highlightedSegmentID = nil
+        uiState = .listening
         audioQueue.sync {
             self.streamingRecognitionService?.reset()
-        }
-        DispatchQueue.main.async {
-            self.subtitles = "Listening..."
         }
 
         do {
             try self.audioEngine?.start()
-            status = .recording
+            isRecording = true
         } catch let error as NSError {
             print("Got an error starting audioEngine: \(error.domain), \(error)")
-            subtitles = "Failed to start microphone."
+            isRecording = false
+            uiState = .idle
+            livePartial = "Failed to start microphone."
         }
         print("started")
     }
 
     private func stopRecorder() {
         audioEngine?.stop()
-        status = .stop
+        isRecording = false
         audioQueue.async {
             guard let update = self.streamingRecognitionService?.finishCurrentUtterance() else {
                 DispatchQueue.main.async {
                     self.livePartial = ""
-                    self.isSpeaking = false
-                    self.subtitles = self.results
+                    self.highlightedSegmentID = nil
+                    self.uiState = .idle
                 }
                 return
             }
@@ -197,25 +184,66 @@ class SherpaOnnxViewModel: ObservableObject {
 
     private func applyStreamingUpdate(_ update: StreamingRecognitionUpdate) {
         DispatchQueue.main.async {
-            self.isSpeaking = update.isSpeaking
-
             if let finalizedText = update.finalizedText,
                !finalizedText.isEmpty {
-                self.sentences.append(finalizedText)
-                self.livePartial = ""
-                print(finalizedText)
+                self.appendFinalizedText(finalizedText)
             } else {
-                self.livePartial = update.partialText
+                self.updateLivePartial(update.partialText, isSpeaking: update.isSpeaking)
+            }
+        }
+    }
+
+    private func appendFinalizedText(_ text: String) {
+        let normalizedText = TranscriptTextNormalizer.normalize(text)
+        guard !normalizedText.isEmpty else {
+            livePartial = ""
+            uiState = isRecording ? .listening : .idle
+            return
+        }
+
+        let segment = TranscriptSegment(text: normalizedText)
+        finalTranscript.append(segment)
+        livePartial = ""
+        highlightedSegmentID = segment.id
+        uiState = .finalized
+        print(normalizedText)
+        scheduleFinalizedStateExit(for: segment.id)
+    }
+
+    private func updateLivePartial(_ text: String, isSpeaking: Bool) {
+        let normalizedText = TranscriptTextNormalizer.normalize(text)
+        livePartial = normalizedText
+
+        if isSpeaking {
+            uiState = .speaking
+        } else if isRecording {
+            uiState = .listening
+        } else {
+            uiState = .idle
+        }
+    }
+
+    private func scheduleFinalizedStateExit(for segmentID: UUID) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + finalizedHighlightDuration) { [weak self] in
+            guard let self else {
+                return
             }
 
-            self.subtitles = self.results
+            if self.highlightedSegmentID == segmentID {
+                self.highlightedSegmentID = nil
+            }
+
+            if self.uiState == .finalized {
+                self.uiState = self.isRecording ? .listening : .idle
+                self.livePartial = ""
+            }
         }
     }
 
     private func applyUnavailableRecognizerMessage() {
         DispatchQueue.main.async {
             self.livePartial = "Streaming Zipformer recognizer is not available."
-            self.subtitles = self.results
+            self.uiState = self.isRecording ? .listening : .idle
         }
     }
 }
